@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 17 Database
+  db:
+    image: postgres:17-alpine
+    container_name: auth_api_db
+    environment:
+      # Read from .env - NO HARDCODING!
+      POSTGRES_USER: ${POSTGRES_USER:-auth_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-auth_user}
+      POSTGRES_DB: ${POSTGRES_DB:-auth_db}
+      # PostgreSQL 17 specific optimizations
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    ports:
+      - "7000:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-auth_user} -d ${POSTGRES_DB:-auth_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - auth_network
+    restart: unless-stopped
+
+  # FastAPI Application (Python 3.13.6)
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        PYTHON_VERSION: 3.13.6
+    container_name: auth_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      # All values from .env file - NO HARDCODING!
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS}
+      APP_NAME: ${APP_NAME}
+      DEBUG: ${DEBUG}
+      PASSWORD_HASH_SCHEME: ${PASSWORD_HASH_SCHEME}
+
+      # Python settings for 3.13
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+    volumes:
+      # Mount source code for hot reload in development
+      - .:/app
+      # Prevent overwriting of Python cache
+      - /app/__pycache__
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - auth_network
+    restart: unless-stopped
+    # Health check for the API
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  auth_network:
+    driver: bridge

@@ -1,0 +1,41 @@
+# =========================
+# FastAPI Framework
+# =========================
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# =========================
+# Database
+# =========================
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+
+# =========================
+# Validation & Settings
+# =========================
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# =========================
+# Security & Authentication
+# =========================
+python-jose[cryptography]==3.3.0
+
+# IMPORTANT: Use bcrypt 4.x for Python 3.13.6 compatibility
+# The older passlib[bcrypt] has issues with Python 3.13
+bcrypt==4.2.1
+passlib==1.7.4
+
+# =========================
+# Environment Management
+# =========================
+python-dotenv==1.0.1
+
+# =========================
+# Testing (Development)
+# =========================
+pytest==8.3.4
+pytest-asyncio==0.24.0
+httpx==0.28.1
+
+pydantic[email]
