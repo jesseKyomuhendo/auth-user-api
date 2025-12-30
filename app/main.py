@@ -9,6 +9,7 @@ includes routers, and handles startup/shutdown events.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import os
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -19,15 +20,6 @@ from app.db.session import engine
 # Setup application logging
 setup_logging(debug=settings.DEBUG)
 logger = logging.getLogger(__name__)
-
-# Create database tables on startup
-# Note: In production, use Alembic migrations instead
-try:
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created successfully")
-except Exception as e:
-    logger.error(f"Failed to create database tables: {e}")
-    raise
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -45,9 +37,9 @@ app = FastAPI(
 
     ## Authentication
     Most endpoints require authentication via Bearer token in the Authorization header:
-```
+    ```
     Authorization: Bearer <your_access_token>
-```
+    ```
     """,
     version="1.0.0",
     docs_url="/docs",
@@ -120,11 +112,20 @@ async def startup_event():
     logger.info(f"Starting {settings.APP_NAME}")
     logger.info(f"Debug mode: {settings.DEBUG}")
 
-    # ✅ ADD THIS SECTION:
+    # Only create tables if NOT in test mode
+    # Tests will create their own tables using fixtures
+    if os.getenv("TESTING") != "true":
+        try:
+            Base.metadata.create_all(bind=engine)
+            logger.info("Database tables created successfully")
+        except Exception as e:
+            logger.error(f"Failed to create database tables: {e}")
+            raise
+
     logger.info("=" * 70)
-    logger.info(" API Server Started Successfully!")
+    logger.info("🚀 API Server Started Successfully!")
     logger.info("=" * 70)
-    logger.info(" Access the API at:")
+    logger.info("📍 Access the API at:")
     logger.info("   • API:      http://localhost:8000")
     logger.info("   • Docs:     http://localhost:8000/docs")
     logger.info("   • ReDoc:    http://localhost:8000/redoc")

@@ -9,11 +9,16 @@ Provides:
 - Authentication helpers
 """
 
+import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+
+# IMPORTANT: Set TESTING environment variable BEFORE importing app
+# This prevents app/main.py from trying to connect to Docker PostgreSQL
+os.environ["TESTING"] = "true"
 
 from app.main import app
 from app.db.base import Base
