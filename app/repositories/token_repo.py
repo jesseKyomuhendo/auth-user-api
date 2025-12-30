@@ -1,6 +1,7 @@
 
 #app/repositories/token_repo.py
 
+from app.utils.time import now_utc
 from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
@@ -81,7 +82,7 @@ def revoke_refresh_token(
     Note: This function uses flush() instead of commit() to allow
     the session dependency to handle the final commit.
     """
-    refresh_token.revoked_at = datetime.now(timezone.utc)
+    refresh_token.revoked_at = now_utc()
     db.flush()
     db.refresh(refresh_token)
     return refresh_token
@@ -95,7 +96,7 @@ def is_refresh_token_active(refresh_token: RefreshToken) -> bool:
     - It is not revoked
     - It has not expired
     """
-    now = datetime.now(timezone.utc)
+    now = now_utc()
     return (
         refresh_token.revoked_at is None
         and refresh_token.expires_at > now

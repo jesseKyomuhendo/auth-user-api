@@ -32,7 +32,7 @@ from app.core.config import settings
 # Use in-memory SQLite for tests (fast and isolated)
 TEST_DATABASE_URL = "sqlite:///:memory:"
 
-# Create test engine with special settings for SQLite
+# Create test engine with simple settings for SQLite
 test_engine = create_engine(
     TEST_DATABASE_URL,
     connect_args={"check_same_thread": False},
