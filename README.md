@@ -718,4 +718,4 @@ To modify requirements, update the validation in `app/schemas/user.py`.
 
 ## Support
 
-For issues, questions, or contributions, please [open an issue](https://github.com/your-repo/issues) on GitHub.
+For issues, questions, or contributions, please [open an issue](https://github.com/jesseKyomuhendo/auth-user-api/issues) on GitHub.
